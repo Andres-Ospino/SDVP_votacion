@@ -1,7 +1,7 @@
 -- Insert test admin (password is 'admin123' hashed with bcrypt)
--- Using a standard bcrypt hash for 'admin123': $2b$10$Y1s10Hl3HkL1d.tT.F/r.u8F61eMof5S5/l38eHl/66xYl9O1hM5a
+-- Using a standard bcrypt hash for 'admin123': $2b$10$imCpMVG/6ZAmb7OsYoZs0OkRTnU6w/T7s9BV0G5y42b/2zT/Ke4EG
 INSERT INTO admins (name, username, password_hash)
-VALUES ('Administrador Principal', 'admin', '$2b$10$Y1s10Hl3HkL1d.tT.F/r.u8F61eMof5S5/l38eHl/66xYl9O1hM5a')
+VALUES ('Administrador Principal', 'admin', '$2b$10$imCpMVG/6ZAmb7OsYoZs0OkRTnU6w/T7s9BV0G5y42b/2zT/Ke4EG')
 ON CONFLICT (username) DO NOTHING;
 
 -- Insert test election
