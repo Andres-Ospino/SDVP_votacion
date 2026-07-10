@@ -50,7 +50,10 @@ export const getDashboardStats = async (req, res) => {
 
 export const getRanking = async (req, res) => {
   try {
-    const activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+    let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+    if (activeElectionResult.rows.length === 0) {
+      activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+    }
     if (activeElectionResult.rows.length === 0) return res.json([]);
     const electionId = activeElectionResult.rows[0].id;
 
@@ -77,7 +80,10 @@ export const getRanking = async (req, res) => {
 
 export const getParticipationByGrade = async (req, res) => {
   try {
-    const activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+    let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+    if (activeElectionResult.rows.length === 0) {
+      activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+    }
     if (activeElectionResult.rows.length === 0) return res.json([]);
     const electionId = activeElectionResult.rows[0].id;
 
