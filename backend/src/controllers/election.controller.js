@@ -48,12 +48,47 @@ export const createElection = async (req, res) => {
         }
       });
 
+      // Clonar candidatos activos de la última elección
+      const lastElection = await tx.election.findFirst({
+        where: { id: { not: election.id } },
+        orderBy: { created_at: 'desc' }
+      });
+
+      if (lastElection) {
+        const activeCandidates = await tx.candidate.findMany({
+          where: { 
+            election_id: lastElection.id, 
+            status: 'ACTIVE', 
+            is_blank: false, 
+            deleted_at: null 
+          }
+        });
+
+        if (activeCandidates.length > 0) {
+          const candidatesData = activeCandidates.map(c => ({
+            election_id: election.id,
+            name: c.name,
+            grade: c.grade,
+            number: c.number,
+            proposal: c.proposal,
+            image_url: c.image_url,
+            status: 'ACTIVE',
+            is_blank: false
+          }));
+
+          await tx.candidate.createMany({
+            data: candidatesData
+          });
+        }
+      }
+
       return election;
     });
 
     res.status(201).json(newElection);
   } catch (error) {
-    res.status(500).json({ message: 'Error interno' });
+    console.error('Error creating election:', error);
+    res.status(500).json({ message: 'Error interno al crear elección' });
   }
 };
 
