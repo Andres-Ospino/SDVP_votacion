@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id            Int      @id @default(autoincrement())
+  name          String
+  username      String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Election {
+  id           Int         @id @default(autoincrement())
+  title        String
+  start_date   DateTime
+  end_date     DateTime
+  status       String      @default("PENDING") // PENDING, ACTIVE, COMPLETED
+  is_active    Boolean     @default(false)
+  hide_results Boolean     @default(true)
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  candidates   Candidate[]
+  votes        Vote[]
+
+  @@map("elections")
+}
+
+model Student {
+  id           Int       @id @default(autoincrement())
+  unique_code  String    @unique
+  name         String
+  grade        String
+  birth_date   String?
+  has_voted    Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+  votes        Vote[]
+
+  @@map("students")
+}
+
+model Candidate {
+  id          Int       @id @default(autoincrement())
+  election_id Int
+  name        String
+  grade       String
+  number      String
+  proposal    String?
+  image_url   String?
+  status      String    @default("ACTIVE") // ACTIVE, INACTIVE
+  is_blank    Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  election Election @relation(fields: [election_id], references: [id])
+  votes    Vote[]
+
+  @@map("candidates")
+}
+
+model Vote {
+  id           Int      @id @default(autoincrement())
+  election_id  Int
+  student_id   Int
+  candidate_id Int
+  receipt_id   String   @unique
+  date         DateTime @default(now())
+
+  election  Election  @relation(fields: [election_id], references: [id])
+  student   Student   @relation(fields: [student_id], references: [id])
+  candidate Candidate @relation(fields: [candidate_id], references: [id])
+
+  @@map("votes")
+}
