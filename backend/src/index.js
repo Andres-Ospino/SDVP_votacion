@@ -38,10 +38,36 @@ app.use('/api/elections', electionRoutes);
 app.use('/api/votes', voteRoutes);
 app.use('/api/stats', statsRoutes);
 
+import { setupDB } from './database/setup.js';
+import pool from './database/pool.js';
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API is running' });
 });
 
-app.listen(PORT, () => {
+const initializeDatabaseIfNeeded = async () => {
+  try {
+    const res = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'admins'
+      );
+    `);
+    
+    if (!res.rows[0].exists) {
+      console.log('📦 Database tables not found. Initializing database...');
+      await setupDB();
+      console.log('✅ Database auto-initialization complete.');
+    } else {
+      console.log('✅ Database already initialized.');
+    }
+  } catch (error) {
+    console.error('❌ Error checking database initialization:', error);
+  }
+};
+
+app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
+  await initializeDatabaseIfNeeded();
 });

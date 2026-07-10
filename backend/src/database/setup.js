@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const setupDB = async () => {
+export const setupDB = async () => {
   try {
     const initSql = fs.readFileSync(path.join(__dirname, '../sql/init.sql'), 'utf-8');
     const seedSql = fs.readFileSync(path.join(__dirname, '../sql/seed.sql'), 'utf-8');
@@ -18,11 +18,15 @@ const setupDB = async () => {
     await pool.query(seedSql);
 
     console.log('Database setup complete.');
-    process.exit(0);
   } catch (error) {
     console.error('Error setting up DB:', error);
-    process.exit(1);
+    throw error;
   }
 };
 
-setupDB();
+// Si el archivo se ejecuta directamente (node setup.js)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  setupDB()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}
