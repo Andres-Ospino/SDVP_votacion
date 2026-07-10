@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, UserCheck, Activity, BarChart3, Download, Lock, Eye, EyeOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import api from '../../services/api';
 
 export default function Dashboard() {
@@ -70,7 +70,7 @@ export default function Dashboard() {
     doc.text(`Participación: ${stats.participation}% | Abstención: ${stats.abstention}%`, 14, 25);
     
     const tableData = ranking.map((c, i) => [i + 1, c.name, c.number, c.grade, c.votes]);
-    doc.autoTable({
+    autoTable(doc, {
       startY: 30,
       head: [['#', 'Candidato', 'Número', 'Curso', 'Votos']],
       body: tableData,
