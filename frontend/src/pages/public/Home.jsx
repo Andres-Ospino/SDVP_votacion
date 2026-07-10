@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Vote } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import api from '../../../services/api';
+import api from '../../services/api';
 
 export default function Home() {
   const navigate = useNavigate();

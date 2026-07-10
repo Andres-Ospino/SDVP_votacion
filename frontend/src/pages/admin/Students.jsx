@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as XLSX from 'xlsx';
-import api from '../../../services/api';
+import api from '../../services/api';
 import { Plus, Search, Upload } from 'lucide-react';
 
 export default function Students() {

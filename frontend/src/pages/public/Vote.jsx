@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { CheckCircle2, User, AlertCircle } from 'lucide-react';
-import api from '../../../services/api';
+import api from '../../services/api';
 
 export default function Vote() {
   const navigate = useNavigate();

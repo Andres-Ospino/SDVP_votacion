@@ -3,7 +3,7 @@ import { Users, UserCheck, Activity, BarChart3, Download, Lock, Eye, EyeOff } fr
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import api from '../../../services/api';
+import api from '../../services/api';
 
 export default function Dashboard() {
   const { data: stats } = useQuery({

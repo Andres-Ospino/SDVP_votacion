@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Fingerprint, CalendarDays, Loader2 } from 'lucide-react';
-import api from '../../../services/api';
+import api from '../../services/api';
 
 export default function Validate() {
   const [code, setCode] = useState('');

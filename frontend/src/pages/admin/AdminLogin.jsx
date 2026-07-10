@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Lock, ShieldAlert } from 'lucide-react';
-import api from '../../../services/api';
+import api from '../../services/api';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');

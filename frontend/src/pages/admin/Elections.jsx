@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../../services/api';
+import api from '../../services/api';
 import { Calendar, CheckCircle2, Clock, Check } from 'lucide-react';
 
 export default function Elections() {
