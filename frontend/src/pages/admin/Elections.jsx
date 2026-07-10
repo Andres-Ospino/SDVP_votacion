@@ -6,6 +6,7 @@ import { Calendar, CheckCircle2, Clock, Check, X } from 'lucide-react';
 export default function Elections() {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     start_date: '',
@@ -15,6 +16,16 @@ export default function Elections() {
   const { data: elections, isLoading } = useQuery({
     queryKey: ['elections'],
     queryFn: async () => (await api.get('/elections')).data
+  });
+
+  // Query to get all active candidates to clone
+  const { data: activeCandidates } = useQuery({
+    queryKey: ['adminCandidates'],
+    queryFn: async () => {
+      const res = await api.get('/candidates');
+      // Filtrar solo candidatos activos y que no sean el voto en blanco
+      return res.data.filter(c => c.status === 'ACTIVE' && !c.is_blank);
+    }
   });
 
   const toggleStatusMutation = useMutation({
@@ -34,6 +45,7 @@ export default function Elections() {
       queryClient.invalidateQueries({ queryKey: ['elections'] });
       setShowModal(false);
       setFormData({ title: '', start_date: '', end_date: '' });
+      setSelectedCandidateIds([]);
     }
   });
 
@@ -49,9 +61,20 @@ export default function Elections() {
     }
   };
 
+  const handleCandidateToggle = (candidateId) => {
+    setSelectedCandidateIds(prev => 
+      prev.includes(candidateId)
+        ? prev.filter(id => id !== candidateId)
+        : [...prev, candidateId]
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    createMutation.mutate(formData);
+    createMutation.mutate({
+      ...formData,
+      candidateIds: selectedCandidateIds
+    });
   };
 
   return (
@@ -62,7 +85,11 @@ export default function Elections() {
           <p className="text-gray-500">Gestión de periodos electorales</p>
         </div>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setShowModal(true);
+            setSelectedCandidateIds([]);
+            setFormData({ title: '', start_date: '', end_date: '' });
+          }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium transition-colors flex items-center space-x-2"
         >
           <Calendar className="w-5 h-5" />
@@ -128,8 +155,8 @@ export default function Elections() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl my-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-900">Nueva Elección</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -167,6 +194,30 @@ export default function Elections() {
                   required
                 />
               </div>
+
+              {activeCandidates && activeCandidates.length > 0 && (
+                <div className="pt-4 border-t border-gray-100">
+                  <label className="block text-sm font-medium text-gray-900 mb-3">Candidatos a Participar</label>
+                  <p className="text-xs text-gray-500 mb-3">Selecciona los candidatos que participarán en esta elección (se generará una copia de ellos). El Voto en Blanco se incluye automáticamente.</p>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                    {activeCandidates.map(candidate => (
+                      <label key={candidate.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={selectedCandidateIds.includes(candidate.id)}
+                          onChange={() => handleCandidateToggle(candidate.id)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">{candidate.name}</p>
+                          <p className="text-xs text-gray-500">Grado: {candidate.grade} • Tarjetón: {candidate.number}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button 
                 type="submit" 
                 disabled={createMutation.isPending}
