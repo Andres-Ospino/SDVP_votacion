@@ -2,8 +2,14 @@ import prisma from '../prisma/client.js';
 
 export const getCandidates = async (req, res) => {
   try {
+    const electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
+    const whereClause = { deleted_at: null };
+    if (electionId) {
+      whereClause.election_id = electionId;
+    }
+
     const candidates = await prisma.candidate.findMany({
-      where: { deleted_at: null },
+      where: whereClause,
       orderBy: { number: 'asc' },
       include: { election: { select: { title: true } } }
     });

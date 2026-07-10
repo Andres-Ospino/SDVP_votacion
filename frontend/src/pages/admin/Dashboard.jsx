@@ -16,7 +16,7 @@ export default function Dashboard() {
 
   const { data: stats } = useQuery({
     queryKey: ['stats', selectedElectionId],
-    queryFn: async () => (await api.get(`/stats${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
+    queryFn: async () => (await api.get(`/stats/dashboard${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
   });
 
   const { data: ranking } = useQuery({

@@ -17,9 +17,11 @@ export default function Candidates() {
     image: null
   });
 
+  const [selectedElectionId, setSelectedElectionId] = useState('');
+
   const { data: candidates, isLoading } = useQuery({
-    queryKey: ['adminCandidates'],
-    queryFn: async () => (await api.get('/candidates')).data
+    queryKey: ['adminCandidates', selectedElectionId],
+    queryFn: async () => (await api.get(`/candidates${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
   });
 
   // Query to get active election to assign candidate to
@@ -104,7 +106,23 @@ export default function Candidates() {
     <div className="p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Candidatos</h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900">Candidatos</h1>
+            {elections && elections.length > 0 && (
+              <select 
+                value={selectedElectionId} 
+                onChange={(e) => setSelectedElectionId(e.target.value)}
+                className="bg-white border border-gray-200 text-gray-700 py-1.5 px-3 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">Todas las Elecciones</option>
+                {elections.map(election => (
+                  <option key={election.id} value={election.id}>
+                    {election.title} {election.is_active ? '(Activa)' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <p className="text-gray-500">Administración de candidatos electorales</p>
         </div>
         <button 

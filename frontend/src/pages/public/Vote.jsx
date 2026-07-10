@@ -17,11 +17,13 @@ export default function Vote() {
     }
   }, [student, navigate]);
 
+  const electionId = sessionStorage.getItem('electionId');
+
   const { data: candidates, isLoading, error } = useQuery({
-    queryKey: ['candidates'],
+    queryKey: ['candidates', electionId],
     queryFn: async () => {
       const res = await api.get('/candidates');
-      const activeCandidates = res.data.filter(c => c.status === 'ACTIVE');
+      const activeCandidates = res.data.filter(c => c.status === 'ACTIVE' && c.election_id == electionId);
       return activeCandidates.sort((a, b) => {
         if (a.is_blank) return 1;
         if (b.is_blank) return -1;
