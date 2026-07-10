@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { Fingerprint, CalendarDays, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 
 export default function Validate() {
@@ -39,74 +38,90 @@ export default function Validate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="max-w-md w-full bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 space-y-8 relative z-10 border border-white/50">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3 shadow-inner">
-            <Fingerprint className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">Validación Estudiantil</h2>
-          <p className="text-gray-500">Ingresa tu código y fecha de nacimiento</p>
+    <div className="h-full min-h-screen bg-surface text-on-surface flex flex-col items-center justify-center font-body-md antialiased relative">
+      <div className="absolute inset-0 z-0 pointer-events-none bg-pattern"></div>
+      
+      {/* Top App Bar */}
+      <header className="fixed top-0 w-full bg-surface-container-lowest shadow-sm h-16 flex justify-center items-center px-margin-mobile z-50">
+        <div className="font-headline-lg text-primary tracking-tight font-bold">Sistema de Elección de Personero</div>
+      </header>
+      
+      <main className="w-full max-w-lg px-margin-mobile flex flex-col items-center gap-stack-lg mt-16 z-10 relative">
+        <div className="text-center">
+          <h1 className="font-display-lg text-on-surface mb-stack-sm">Validación</h1>
+          <p className="font-body-lg text-on-surface-variant">Ingresa tus credenciales para continuar.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-semibold text-gray-700 block mb-2">Código Único</label>
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Ej. EST001"
-                className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all duration-200 text-lg uppercase tracking-wider font-medium placeholder-gray-400"
-              />
-            </div>
+        <div className="w-full bg-surface-container-lowest rounded-xl shadow-md p-gutter border border-surface-variant transition-all duration-300 hover:shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-6">
             
-            <div>
-              <label className="text-sm font-semibold text-gray-700 block mb-2 flex items-center space-x-2">
-                <CalendarDays className="w-4 h-4 text-gray-500" />
-                <span>Fecha de Nacimiento</span>
-              </label>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all duration-200 text-lg font-medium text-gray-700"
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 flex items-center justify-center">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={validateMutation.isPending}
-            className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 shadow-xl shadow-gray-900/20 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed group"
-          >
-            {validateMutation.isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Verificando...</span>
-              </>
-            ) : (
-              <>
-                <span>Continuar</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </>
+            {error && (
+              <div className="w-full bg-error-container rounded-xl shadow-sm p-4 border border-error relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-error"></div>
+                <p className="font-caption-xs text-error flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">warning</span> {error}
+                </p>
+              </div>
             )}
-          </button>
-        </form>
-      </div>
+
+            <div>
+              <label className="block font-label-sm text-on-surface mb-stack-sm" htmlFor="codigo-estudiantil">Código Estudiantil</label>
+              <div className="relative mb-stack-sm">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant" style={{ fontVariationSettings: "'FILL' 0" }}>badge</span>
+                <input 
+                  id="codigo-estudiantil"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors font-body-md text-on-surface placeholder-outline" 
+                  placeholder="Ej: 202301045"
+                  disabled={validateMutation.isPending}
+                />
+              </div>
+              <p className="font-caption-xs text-on-surface-variant">Tu código se encuentra en tu carné.</p>
+            </div>
+
+            <div>
+              <label className="block font-label-sm text-on-surface mb-stack-sm" htmlFor="fecha-nacimiento">Fecha de Nacimiento</label>
+              <div className="relative mb-stack-sm">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant" style={{ fontVariationSettings: "'FILL' 0" }}>calendar_today</span>
+                <input 
+                  id="fecha-nacimiento"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors font-body-md text-on-surface placeholder-outline" 
+                  disabled={validateMutation.isPending}
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              disabled={validateMutation.isPending}
+              className="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-sm hover:bg-primary hover:text-on-primary active:scale-[0.98] transition-all duration-200 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {validateMutation.isPending ? (
+                <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+              ) : (
+                <>
+                  <span>Continuar</span>
+                  <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>arrow_forward</span>
+                </>
+              )}
+            </button>
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="font-label-sm text-primary hover:underline"
+              >
+                Volver al inicio
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }

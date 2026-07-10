@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { CheckCircle2, User, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 
 export default function Vote() {
@@ -34,7 +33,7 @@ export default function Vote() {
   const voteMutation = useMutation({
     mutationFn: async (candidate_id) => {
       const res = await api.post('/votes/register', {
-        unique_code: student.unique_code || student.id, // el controlador espera unique_code
+        unique_code: student.unique_code,
         candidate_id
       });
       return res.data;
@@ -46,127 +45,202 @@ export default function Vote() {
     }
   });
 
-  const handleVote = () => {
-    // Si mandamos unique_code
-    // Oh, wait, in Validate we saved student which doesn't have unique_code because the API returns only id, name, grade.
-    // I need to make sure Validate API returns unique_code, or I use the unique_code I typed.
-    // Actually, Validate saves id, name, grade. Let me get unique_code from somewhere else, or update validate API to return it.
-    // Let me just send the candidate_id and wait, the API requires unique_code.
-    // I will modify Validate to store unique_code.
-  };
-
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Cargando candidatos...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">Error al cargar candidatos</div>;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center font-body-md text-on-surface-variant">Cargando candidatos...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center font-body-md text-error">Error al cargar candidatos</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        <header className="bg-white rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Tarjetón Electoral</h1>
-            <p className="text-gray-500">Selecciona a tu candidato de preferencia</p>
+    <div className="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+      {/* Top Navigation */}
+      <header className="bg-surface shadow-sm z-50 sticky top-0">
+        <div className="flex justify-between items-center w-full px-margin-mobile md:px-stack-lg max-w-container-max mx-auto h-16">
+          <div className="flex items-center gap-4">
+            <span className="font-headline-lg text-primary tracking-tight hidden md:block">Sistema de Elección de Personero</span>
+            <span className="font-headline-lg-mobile text-primary tracking-tight md:hidden">SEP</span>
           </div>
-          <div className="mt-4 md:mt-0 flex items-center space-x-3 bg-blue-50 px-4 py-2 rounded-full">
-            <User className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-blue-900">{student?.name} ({student?.grade})</span>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col text-right hidden sm:block">
+              <span className="font-label-sm text-on-surface">{student?.name}</span>
+              <span className="font-caption-xs text-on-surface-variant">Grado {student?.grade}</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm">
+              <span className="material-symbols-outlined text-[18px]">person</span>
+            </div>
           </div>
-        </header>
+        </div>
+      </header>
+
+      {/* Main Content Canvas */}
+      <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-stack-lg py-stack-lg flex flex-col items-center">
+        {/* Progress Indicator */}
+        <div className="w-full max-w-3xl mb-stack-xl mt-stack-md hidden sm:block">
+          <div className="flex items-center justify-between relative">
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-[2px] bg-outline-variant -z-10"></div>
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1/2 h-[2px] bg-primary -z-10 transition-all duration-500"></div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-sm">check</span>
+              </div>
+              <span className="font-caption-xs text-on-surface-variant">Identificación</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm ring-4 ring-primary-container/20">
+                <span className="font-label-sm">2</span>
+              </div>
+              <span className="font-caption-xs text-primary font-medium">Votación</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface-variant flex items-center justify-center">
+                <span className="font-label-sm">3</span>
+              </div>
+              <span className="font-caption-xs text-on-surface-variant">Confirmación</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mb-stack-lg">
+          <h1 className="font-headline-lg md:font-display-lg text-on-surface mb-2 tracking-tight">Elige a tu Personero</h1>
+          <p className="font-body-lg text-on-surface-variant max-w-2xl mx-auto">Selecciona el candidato de tu preferencia. Revisa sus propuestas antes de tomar una decisión.</p>
+        </div>
 
         {voteMutation.isError && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center space-x-3">
-            <AlertCircle className="w-6 h-6" />
-            <span className="font-medium">{voteMutation.error.response?.data?.message || 'Error al registrar el voto'}</span>
+          <div className="w-full max-w-2xl bg-error-container text-error p-4 rounded-xl flex items-center space-x-3 mb-6">
+            <span className="material-symbols-outlined">warning</span>
+            <span className="font-body-md">{voteMutation.error.response?.data?.message || 'Error al registrar el voto'}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Candidate Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter w-full mb-stack-xl">
           {candidates?.map((candidate) => (
             <div 
-              key={candidate.id} 
-              onClick={() => setSelectedCandidate(candidate)}
-              className={`bg-white rounded-3xl shadow-sm border overflow-hidden flex flex-col transform transition-all duration-200 cursor-pointer ${
-                selectedCandidate?.id === candidate.id ? 'border-blue-500 ring-2 ring-blue-500 shadow-xl scale-[1.02]' : ''
-              } ${
-                candidate.is_blank ? 'border-gray-300 bg-gray-50' : 'border-gray-100'
-              }`}
+              key={candidate.id}
+              className={`candidate-card bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 p-6 flex flex-col items-center text-center relative overflow-hidden group cursor-pointer border ${
+                selectedCandidate?.id === candidate.id ? 'border-primary ring-2 ring-primary/20 bg-surface-container-low' : 'border-transparent hover:border-primary/10'
+              } ${candidate.is_blank ? 'justify-center' : ''}`}
             >
-              <div className="aspect-square bg-gray-100 overflow-hidden relative">
-                {candidate.image_url ? (
-                  <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.image_url}`} alt={candidate.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className={`w-24 h-24 ${candidate.is_blank ? 'text-gray-400' : 'text-gray-300'}`} />
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full font-bold text-gray-900 shadow-sm">
-                  #{candidate.number}
-                </div>
-              </div>
-              
-              <div className="p-6 text-center space-y-2">
-                <h3 className="text-xl font-bold text-gray-900">{candidate.name}</h3>
-                {candidate.grade !== 'N/A' && <p className="text-blue-600 font-medium">Curso {candidate.grade}</p>}
-                <p className="text-gray-500 text-sm line-clamp-2">{candidate.proposal}</p>
-              </div>
-
-              {selectedCandidate?.id === candidate.id && (
-                <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center pointer-events-none">
-                  <div className="bg-blue-500 text-white p-3 rounded-full shadow-lg transform scale-110">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
+              {!candidate.is_blank && (
+                <div className="absolute top-4 left-4 bg-primary-container text-on-primary-container w-10 h-10 rounded-full flex items-center justify-center font-title-md font-bold shadow-sm">
+                  {candidate.number?.toString().padStart(2, '0') || '00'}
                 </div>
               )}
+              
+              <div className={`w-32 h-32 rounded-full overflow-hidden mb-4 border-4 transition-colors duration-300 mt-2 ${
+                candidate.is_blank ? 'border-surface-container-highest group-hover:border-outline-variant flex items-center justify-center bg-surface-container-low' : 'border-surface-container-highest group-hover:border-primary-container'
+              }`}>
+                {!candidate.is_blank ? (
+                  candidate.image_url ? (
+                    <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${candidate.image_url}`} alt={candidate.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-surface-container-high">
+                      <span className="material-symbols-outlined text-4xl text-outline">person</span>
+                    </div>
+                  )
+                ) : (
+                  <span className="material-symbols-outlined text-6xl text-outline-variant">how_to_vote</span>
+                )}
+              </div>
+              
+              <h3 className="font-title-md text-on-surface mb-1">{candidate.name}</h3>
+              
+              {!candidate.is_blank && (
+                <>
+                  <span className="font-label-sm text-secondary mb-4 bg-secondary-fixed/50 px-3 py-1 rounded-full">
+                    {candidate.grade !== 'N/A' ? `Grado ${candidate.grade}` : 'Sin Grado'}
+                  </span>
+                  <p className="font-body-md text-on-surface-variant mb-6 line-clamp-3">
+                    {candidate.proposal || "Sin propuestas detalladas."}
+                  </p>
+                </>
+              )}
+
+              {candidate.is_blank && (
+                <p className="font-body-md text-on-surface-variant mb-6">Ninguna de las opciones anteriores.</p>
+              )}
+
+              <div className="mt-auto w-full flex flex-col gap-3">
+                {!candidate.is_blank && (
+                  <button className="flex items-center justify-center gap-2 text-primary font-label-sm hover:underline">
+                    Ver Propuestas Completas <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  </button>
+                )}
+                {candidate.is_blank && <div className="h-6"></div>}
+                
+                <button 
+                  onClick={() => {
+                    setSelectedCandidate(candidate);
+                    setShowConfirm(true);
+                  }}
+                  className={`w-full font-label-sm py-3 rounded-lg hover:scale-[0.98] transition-transform shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    candidate.is_blank ? 'bg-surface-container-high text-on-surface focus:ring-outline border border-outline-variant' : 'bg-primary-container text-on-primary focus:ring-primary'
+                  }`}
+                >
+                  {candidate.is_blank ? 'Votar en Blanco' : `Votar por ${candidate.name.split(' ')[0]}`}
+                </button>
+              </div>
             </div>
           ))}
         </div>
+      </main>
 
-        {/* Floating Action Bar */}
-        {selectedCandidate && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 md:p-8 pointer-events-none">
-            <div className="max-w-md mx-auto pointer-events-auto">
-              <button
-                onClick={() => setShowConfirm(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl flex items-center justify-center space-x-3 transition-all"
-              >
-                <span>Votar por {selectedCandidate.name}</span>
-                <CheckCircle2 className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de confirmación */}
-        {showConfirm && (
-          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 text-center shadow-2xl">
-              <div className="mx-auto w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                <CheckCircle2 className="w-10 h-10 text-blue-600" />
+      {/* Confirmation Modal Overlay */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-on-surface/50 backdrop-blur-sm z-[100] flex items-center justify-center transition-opacity duration-300">
+          <div className="bg-surface-container-lowest rounded-xl shadow-md w-full max-w-md mx-margin-mobile p-stack-lg transform scale-100 transition-transform duration-300">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-surface-container text-primary flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-3xl">warning</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">¿Confirmar tu voto?</h3>
-              <p className="text-gray-500">
-                Estás a punto de votar por <strong className="text-gray-900">{selectedCandidate.name}</strong>. Esta acción no se puede deshacer.
-              </p>
+              <h2 className="font-headline-lg-mobile text-on-surface mb-2">Confirmar Voto</h2>
+              <p className="font-body-lg text-on-surface-variant mb-6">¿Estás seguro de que deseas registrar tu voto por <strong className="text-on-surface">{selectedCandidate.name}</strong>?</p>
               
-              <div className="flex space-x-4 pt-4">
-                <button
+              <div className="w-full bg-surface-container-low p-4 rounded-lg mb-6 border border-outline-variant/30 text-left">
+                <p className="font-caption-xs text-on-surface-variant mb-1">Tu selección:</p>
+                <div className="flex items-center gap-3">
+                  {!selectedCandidate.is_blank && (
+                    <span className="font-title-md bg-primary text-on-primary w-8 h-8 rounded flex items-center justify-center">
+                      {selectedCandidate.number?.toString().padStart(2, '0') || '00'}
+                    </span>
+                  )}
+                  <span className="font-title-md text-on-surface">{selectedCandidate.name}</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <button 
                   onClick={() => setShowConfirm(false)}
-                  className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  disabled={voteMutation.isPending}
+                  className="w-full sm:w-1/2 py-3 rounded-lg font-label-sm bg-surface-container-highest text-on-surface hover:bg-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-outline disabled:opacity-50"
                 >
                   Cancelar
                 </button>
-                <button
+                <button 
                   onClick={() => voteMutation.mutate(selectedCandidate.id)}
                   disabled={voteMutation.isPending}
-                  className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+                  className="w-full sm:w-1/2 py-3 rounded-lg font-label-sm bg-primary-container text-on-primary hover:scale-[0.98] transition-transform shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex justify-center items-center disabled:opacity-50"
                 >
-                  {voteMutation.isPending ? 'Procesando...' : 'Sí, confirmar'}
+                  {voteMutation.isPending ? (
+                    <><span className="material-symbols-outlined animate-spin text-sm mr-2">refresh</span> Procesando...</>
+                  ) : (
+                    'Confirmar Voto'
+                  )}
                 </button>
               </div>
+              <p className="font-caption-xs text-on-surface-variant mt-4 text-center">Esta acción es irreversible una vez confirmada.</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="w-full py-stack-lg px-margin-mobile border-t border-outline-variant max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center bg-surface-container-lowest shadow-sm mt-auto">
+        <span className="text-label-sm font-label-sm text-on-surface-variant mb-4 md:mb-0">© 2026 Sistema de Elección de Personero. Institucional e Integridad.</span>
+        <div className="flex gap-4">
+          <a className="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Legal</a>
+          <a className="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
+          <a className="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Manual</a>
+          <a className="text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+        </div>
+      </footer>
     </div>
   );
 }

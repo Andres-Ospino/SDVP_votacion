@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { CheckCircle2, Download } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import jsPDF from 'jspdf';
 
@@ -27,42 +26,46 @@ export default function Thanks() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="max-w-md w-full bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-10 text-center space-y-8 relative z-10 border border-white/50">
-        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 transform transition-all duration-500 hover:scale-110 hover:rotate-12 shadow-inner">
-          <CheckCircle2 className="w-12 h-12 text-green-500" />
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">¡Voto Registrado!</h2>
-          <p className="text-gray-600 text-lg">
-            Gracias por participar. Tu decisión es fundamental para el futuro de nuestra comunidad educativa.
+    <div className="bg-surface text-on-surface min-h-screen flex items-center justify-center p-margin-mobile font-body-md antialiased relative">
+      <div className="absolute inset-0 z-0 pointer-events-none bg-pattern"></div>
+      
+      <main className="w-full max-w-md z-10 relative">
+        <div className="bg-surface-container-lowest shadow-md rounded-xl p-stack-lg md:p-stack-xl flex flex-col items-center text-center border border-outline-variant/20">
+          
+          <div className="bg-primary-container w-24 h-24 rounded-full flex items-center justify-center mb-stack-lg shadow-sm">
+            <span className="material-symbols-outlined text-[48px] text-on-primary-container">check</span>
+          </div>
+          
+          <h1 className="font-headline-lg-mobile md:font-headline-lg text-on-surface mb-stack-sm">
+            ¡Gracias por votar!
+          </h1>
+          <p className="font-body-lg text-on-surface-variant mb-stack-xl">
+            Su voto fue registrado correctamente.
           </p>
-          {receiptId && (
-            <p className="text-sm font-mono text-gray-400 bg-gray-50 py-2 rounded-lg border border-gray-100">
-              ID: {receiptId}
-            </p>
-          )}
-        </div>
 
-        <div className="pt-4 space-y-3">
           {receiptId && (
-            <button
-              onClick={downloadReceipt}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg shadow-green-500/30 flex items-center justify-center space-x-2"
-            >
-              <Download className="w-5 h-5" />
-              <span>Descargar Comprobante</span>
-            </button>
+            <div className="w-full mb-stack-lg">
+              <p className="font-caption-xs text-on-surface-variant bg-surface-container-low p-2 rounded-lg border border-outline-variant/30 text-center font-mono break-all">
+                Recibo: {receiptId}
+              </p>
+              <button 
+                onClick={downloadReceipt}
+                className="mt-3 flex items-center justify-center gap-2 text-primary font-label-sm hover:underline w-full"
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                Descargar comprobante en PDF
+              </button>
+            </div>
           )}
-          <button
+
+          <button 
             onClick={() => navigate('/')}
-            className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg shadow-gray-900/20"
+            className="w-full bg-primary text-on-primary font-label-sm py-3 px-4 rounded-lg active:scale-95 transition-transform duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
-            Volver al Inicio
+            Finalizar
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
