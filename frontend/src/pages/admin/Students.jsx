@@ -7,7 +7,7 @@ import { Plus, Search, Upload } from 'lucide-react';
 export default function Students() {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ unique_code: '', name: '', grade: '' });
+  const [formData, setFormData] = useState({ unique_code: '', name: '', grade: '', birth_date: '' });
   const [selectedElectionId, setSelectedElectionId] = useState('');
 
   const { data: elections } = useQuery({
@@ -143,17 +143,19 @@ export default function Students() {
                 <th className="p-4 font-medium">Código</th>
                 <th className="p-4 font-medium">Nombre</th>
                 <th className="p-4 font-medium">Curso</th>
+                <th className="p-4 font-medium">F. Nacimiento</th>
                 <th className="p-4 font-medium text-center">Estado Voto</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {isLoading ? (
-                <tr><td colSpan="4" className="p-4 text-center text-gray-500">Cargando...</td></tr>
+                <tr><td colSpan="5" className="p-4 text-center text-gray-500">Cargando...</td></tr>
               ) : students?.map(student => (
                 <tr key={student.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="p-4 font-medium text-gray-900">{student.unique_code}</td>
                   <td className="p-4 text-gray-600">{student.name}</td>
                   <td className="p-4 text-gray-600">{student.grade}</td>
+                  <td className="p-4 text-gray-600">{student.birth_date || 'N/D'}</td>
                   <td className="p-4 text-center">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${student.has_voted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                       {student.has_voted ? 'Votó' : 'Pendiente'}
@@ -201,6 +203,15 @@ export default function Students() {
                   onChange={e => setFormData({...formData, grade: e.target.value})}
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Ej. 11A"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">Fecha de Nacimiento</label>
+                <input
+                  type="date"
+                  value={formData.birth_date}
+                  onChange={e => setFormData({...formData, birth_date: e.target.value})}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
 

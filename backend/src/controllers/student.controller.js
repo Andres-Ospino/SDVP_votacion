@@ -41,7 +41,7 @@ export const getStudents = async (req, res) => {
 
 export const createStudent = async (req, res) => {
   try {
-    const { unique_code, name, grade } = req.body;
+    const { unique_code, name, grade, birth_date } = req.body;
     
     const existing = await prisma.student.findUnique({
       where: { unique_code }
@@ -52,7 +52,7 @@ export const createStudent = async (req, res) => {
     }
 
     const newStudent = await prisma.student.create({
-      data: { unique_code, name, grade }
+      data: { unique_code, name, grade, birth_date }
     });
 
     res.status(201).json(newStudent);
@@ -64,11 +64,11 @@ export const createStudent = async (req, res) => {
 export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { unique_code, name, grade } = req.body;
+    const { unique_code, name, grade, birth_date } = req.body;
 
     const updated = await prisma.student.update({
       where: { id: parseInt(id) },
-      data: { unique_code, name, grade }
+      data: { unique_code, name, grade, birth_date }
     });
 
     res.json(updated);
