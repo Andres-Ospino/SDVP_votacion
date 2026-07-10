@@ -22,8 +22,8 @@ export default function Vote() {
   const { data: candidates, isLoading, error } = useQuery({
     queryKey: ['candidates', electionId],
     queryFn: async () => {
-      const res = await api.get('/candidates');
-      const activeCandidates = res.data.filter(c => c.status === 'ACTIVE' && c.election_id == electionId);
+      const res = await api.get(`/candidates?electionId=${electionId}`);
+      const activeCandidates = res.data.filter(c => c.status === 'ACTIVE');
       return activeCandidates.sort((a, b) => {
         if (a.is_blank) return 1;
         if (b.is_blank) return -1;
