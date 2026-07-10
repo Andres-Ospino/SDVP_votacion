@@ -75,7 +75,7 @@ export const registerVote = async (req, res) => {
 
     if (electionResult.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'No hay elecciones activas' });
+      return res.status(400).json({ message: 'No hay elecciones activas' });
     }
     const electionId = electionResult.rows[0].id;
 
@@ -85,7 +85,7 @@ export const registerVote = async (req, res) => {
 
     if (studentResult.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Estudiante no encontrado' });
+      return res.status(400).json({ message: 'Estudiante no encontrado' });
     }
 
     const student = studentResult.rows[0];
@@ -105,7 +105,7 @@ export const registerVote = async (req, res) => {
 
     if (candidateResult.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Candidato no válido para esta elección' });
+      return res.status(400).json({ message: 'Candidato no válido para esta elección' });
     }
 
     // 4. Registrar el voto
