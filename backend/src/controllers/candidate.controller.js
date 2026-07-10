@@ -5,13 +5,12 @@ export const getCandidates = async (req, res) => {
     const electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
     const whereClause = { deleted_at: null };
     if (electionId) {
-      whereClause.election_id = electionId;
+      whereClause.elections = { some: { election_id: electionId } };
     }
 
     const candidates = await prisma.candidate.findMany({
       where: whereClause,
-      orderBy: { number: 'asc' },
-      include: { election: { select: { title: true } } }
+      orderBy: { number: 'asc' }
     });
     res.json(candidates);
   } catch (error) {
@@ -30,8 +29,10 @@ export const createCandidate = async (req, res) => {
         grade,
         number,
         proposal,
-        election_id: parseInt(election_id),
-        image_url
+        image_url,
+        elections: election_id ? {
+          create: [{ election_id: parseInt(election_id) }]
+        } : undefined
       }
     });
 
@@ -47,7 +48,6 @@ export const updateCandidate = async (req, res) => {
     const { name, grade, number, proposal, status, election_id } = req.body;
     
     const data = { name, grade, number, proposal, status };
-    if (election_id) data.election_id = parseInt(election_id);
     if (req.file) data.image_url = `/uploads/${req.file.filename}`;
 
     const updated = await prisma.candidate.update({

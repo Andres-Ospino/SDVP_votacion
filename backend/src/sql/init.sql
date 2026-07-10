@@ -41,7 +41,6 @@ CREATE TABLE students (
 
 CREATE TABLE candidates (
     id SERIAL PRIMARY KEY,
-    election_id INTEGER NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     grade VARCHAR(50) NOT NULL,
     number VARCHAR(10) NOT NULL,
@@ -52,6 +51,12 @@ CREATE TABLE candidates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
+);
+
+CREATE TABLE election_candidates (
+    election_id INTEGER NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
+    candidate_id INTEGER NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+    PRIMARY KEY (election_id, candidate_id)
 );
 
 CREATE TABLE votes (

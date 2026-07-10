@@ -27,7 +27,7 @@ model Election {
   hide_results Boolean     @default(true)
   created_at   DateTime    @default(now())
   updated_at   DateTime    @updatedAt
-  candidates   Candidate[]
+  candidates   ElectionCandidate[]
   votes        Vote[]
 
   @@map("elections")
@@ -50,7 +50,6 @@ model Student {
 
 model Candidate {
   id          Int       @id @default(autoincrement())
-  election_id Int
   name        String
   grade       String
   number      String
@@ -61,12 +60,22 @@ model Candidate {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-
-  election Election @relation(fields: [election_id], references: [id])
-  votes    Vote[]
+  elections   ElectionCandidate[]
+  votes       Vote[]
 
   @@map("candidates")
 }
+
+model ElectionCandidate {
+  election_id  Int
+  candidate_id Int
+  election     Election  @relation(fields: [election_id], references: [id], onDelete: Cascade)
+  candidate    Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@id([election_id, candidate_id])
+  @@map("election_candidates")
+}
+
 
 model Vote {
   id           Int      @id @default(autoincrement())

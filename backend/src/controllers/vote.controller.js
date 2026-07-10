@@ -100,7 +100,7 @@ export const registerVote = async (req, res) => {
     }
 
     // 3. Validar que el candidato exista y esté activo en esta elección
-    const candidateQuery = 'SELECT id FROM candidates WHERE id = $1 AND election_id = $2 AND status = $3 AND deleted_at IS NULL';
+    const candidateQuery = 'SELECT c.id FROM candidates c INNER JOIN election_candidates ec ON c.id = ec.candidate_id WHERE c.id = $1 AND ec.election_id = $2 AND c.status = $3 AND c.deleted_at IS NULL';
     const candidateResult = await client.query(candidateQuery, [candidate_id, electionId, 'ACTIVE']);
 
     if (candidateResult.rows.length === 0) {

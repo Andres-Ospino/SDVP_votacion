@@ -4,7 +4,7 @@ export const getDashboardStats = async (req, res) => {
   try {
     // 1. Total estudiantes, candidatos, votos
     const totalStudentsQuery = 'SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL';
-    const totalCandidatesQuery = 'SELECT COUNT(*) as count FROM candidates WHERE deleted_at IS NULL AND status = $1 AND election_id = $2';
+    const totalCandidatesQuery = 'SELECT COUNT(c.id) as count FROM candidates c INNER JOIN election_candidates ec ON c.id = ec.candidate_id WHERE c.deleted_at IS NULL AND c.status = $1 AND ec.election_id = $2';
     
     let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
     
@@ -68,9 +68,10 @@ export const getRanking = async (req, res) => {
     const rankingQuery = `
       SELECT c.id, c.name, c.number, c.grade, c.image_url, COUNT(v.id) as votes
       FROM candidates c
+      INNER JOIN election_candidates ec ON c.id = ec.candidate_id
       LEFT JOIN votes v ON c.id = v.candidate_id AND v.election_id = $1
-      WHERE c.election_id = $1 AND c.deleted_at IS NULL
-      GROUP BY c.id
+      WHERE ec.election_id = $1 AND c.deleted_at IS NULL
+      GROUP BY c.id, c.name, c.number, c.grade, c.image_url
       ORDER BY votes DESC
     `;
 

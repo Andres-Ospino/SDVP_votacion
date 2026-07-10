@@ -37,44 +37,38 @@ export const createElection = async (req, res) => {
       });
 
       // Voto en Blanco estructural
-      await tx.candidate.create({
+      let blankVote = await tx.candidate.findFirst({
+        where: { is_blank: true }
+      });
+      if (!blankVote) {
+        blankVote = await tx.candidate.create({
+          data: {
+            name: 'Voto en Blanco',
+            grade: 'N/A',
+            number: 'BLANCO',
+            is_blank: true,
+            status: 'ACTIVE'
+          }
+        });
+      }
+      
+      await tx.electionCandidate.create({
         data: {
           election_id: election.id,
-          name: 'Voto en Blanco',
-          grade: 'N/A',
-          number: 'BLANCO',
-          is_blank: true,
-          status: 'ACTIVE'
+          candidate_id: blankVote.id
         }
       });
 
-      // Clonar candidatos seleccionados
+      // Vincular candidatos seleccionados
       if (Array.isArray(candidateIds) && candidateIds.length > 0) {
-        const activeCandidates = await tx.candidate.findMany({
-          where: { 
-            id: { in: candidateIds.map(Number) }, 
-            status: 'ACTIVE', 
-            is_blank: false, 
-            deleted_at: null 
-          }
+        const links = candidateIds.map(cid => ({
+          election_id: election.id,
+          candidate_id: Number(cid)
+        }));
+        
+        await tx.electionCandidate.createMany({
+          data: links
         });
-
-        if (activeCandidates.length > 0) {
-          const candidatesData = activeCandidates.map(c => ({
-            election_id: election.id,
-            name: c.name,
-            grade: c.grade,
-            number: c.number,
-            proposal: c.proposal,
-            image_url: c.image_url,
-            status: 'ACTIVE',
-            is_blank: false
-          }));
-
-          await tx.candidate.createMany({
-            data: candidatesData
-          });
-        }
       }
 
       return election;
