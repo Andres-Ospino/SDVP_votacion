@@ -4,7 +4,7 @@ export const getDashboardStats = async (req, res) => {
   try {
     // 1. Total estudiantes, candidatos, votos
     const totalStudentsQuery = 'SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL';
-    const totalCandidatesQuery = 'SELECT COUNT(*) as count FROM candidates WHERE deleted_at IS NULL AND status = $1';
+    const totalCandidatesQuery = 'SELECT COUNT(*) as count FROM candidates WHERE deleted_at IS NULL AND status = $1 AND election_id = $2';
     
     let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
     
@@ -27,7 +27,7 @@ export const getDashboardStats = async (req, res) => {
 
     const [studentsResult, candidatesResult, votesResult] = await Promise.all([
       pool.query(totalStudentsQuery),
-      pool.query(totalCandidatesQuery, ['ACTIVE']),
+      pool.query(totalCandidatesQuery, ['ACTIVE', electionId]),
       pool.query(totalVotesQuery, [electionId])
     ]);
 
