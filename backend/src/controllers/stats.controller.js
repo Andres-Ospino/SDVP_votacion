@@ -6,14 +6,17 @@ export const getDashboardStats = async (req, res) => {
     const totalStudentsQuery = 'SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL';
     const totalCandidatesQuery = 'SELECT COUNT(*) as count FROM candidates WHERE deleted_at IS NULL AND status = $1';
     
-    // Obtenemos elección activa (o la última si no hay)
-    const activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
-    let electionId = null;
-    if (activeElectionResult.rows.length > 0) {
-      electionId = activeElectionResult.rows[0].id;
-    } else {
-      const lastElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
-      if (lastElectionResult.rows.length > 0) electionId = lastElectionResult.rows[0].id;
+    let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
+    
+    if (!electionId) {
+      // Obtenemos elección activa (o la última si no hay)
+      const activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+      if (activeElectionResult.rows.length > 0) {
+        electionId = activeElectionResult.rows[0].id;
+      } else {
+        const lastElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+        if (lastElectionResult.rows.length > 0) electionId = lastElectionResult.rows[0].id;
+      }
     }
 
     if (!electionId) {
@@ -50,12 +53,16 @@ export const getDashboardStats = async (req, res) => {
 
 export const getRanking = async (req, res) => {
   try {
-    let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
-    if (activeElectionResult.rows.length === 0) {
-      activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+    let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
+    
+    if (!electionId) {
+      let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+      if (activeElectionResult.rows.length === 0) {
+        activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+      }
+      if (activeElectionResult.rows.length === 0) return res.json([]);
+      electionId = activeElectionResult.rows[0].id;
     }
-    if (activeElectionResult.rows.length === 0) return res.json([]);
-    const electionId = activeElectionResult.rows[0].id;
 
     // JOIN, GROUP BY, COUNT, ORDER BY
     const rankingQuery = `
@@ -80,26 +87,31 @@ export const getRanking = async (req, res) => {
 
 export const getParticipationByGrade = async (req, res) => {
   try {
-    let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
-    if (activeElectionResult.rows.length === 0) {
-      activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+    let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
+    
+    if (!electionId) {
+      let activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+      if (activeElectionResult.rows.length === 0) {
+        activeElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+      }
+      if (activeElectionResult.rows.length === 0) return res.json([]);
+      electionId = activeElectionResult.rows[0].id;
     }
-    if (activeElectionResult.rows.length === 0) return res.json([]);
-    const electionId = activeElectionResult.rows[0].id;
 
-    // Participación por grado: total estudiantes vs los que ya votaron
+    // Participación por grado: total estudiantes vs los que ya votaron en esta eleccion especifica
     const query = `
       SELECT 
         s.grade,
-        COUNT(s.id) as total_students,
-        SUM(CASE WHEN s.has_voted = TRUE THEN 1 ELSE 0 END) as total_voted
+        COUNT(DISTINCT s.id) as total_students,
+        COUNT(DISTINCT v.id) as total_voted
       FROM students s
+      LEFT JOIN votes v ON s.id = v.student_id AND v.election_id = $1
       WHERE s.deleted_at IS NULL
       GROUP BY s.grade
       ORDER BY s.grade ASC
     `;
 
-    const result = await pool.query(query);
+    const result = await pool.query(query, [electionId]);
     res.json(result.rows.map(row => ({
       grade: row.grade,
       total_students: parseInt(row.total_students, 10),

@@ -19,7 +19,7 @@ export default function Elections() {
 
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, is_active, status }) => {
-      return api.put(`/elections/${id}`, { is_active, status });
+      return api.put(`/elections/${id}/status`, { is_active, status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['elections'] });

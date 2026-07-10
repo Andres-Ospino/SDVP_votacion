@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, UserCheck, Activity, BarChart3, Download, Lock, Eye, EyeOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -6,14 +7,21 @@ import autoTable from 'jspdf-autotable';
 import api from '../../services/api';
 
 export default function Dashboard() {
+  const [selectedElectionId, setSelectedElectionId] = useState('');
+
+  const { data: elections } = useQuery({
+    queryKey: ['elections'],
+    queryFn: async () => (await api.get('/elections')).data
+  });
+
   const { data: stats } = useQuery({
-    queryKey: ['stats'],
-    queryFn: async () => (await api.get('/stats')).data
+    queryKey: ['stats', selectedElectionId],
+    queryFn: async () => (await api.get(`/stats${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
   });
 
   const { data: ranking } = useQuery({
-    queryKey: ['ranking'],
-    queryFn: async () => (await api.get('/stats/ranking')).data
+    queryKey: ['ranking', selectedElectionId],
+    queryFn: async () => (await api.get(`/stats/ranking${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
   });
 
   const { data: activeElection } = useQuery({
@@ -83,16 +91,32 @@ export default function Dashboard() {
     <div className="p-8 space-y-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            {elections && elections.length > 0 && (
+              <select 
+                value={selectedElectionId} 
+                onChange={(e) => setSelectedElectionId(e.target.value)}
+                className="bg-white border border-gray-200 text-gray-700 py-1.5 px-3 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">Elección Actual / Última</option>
+                {elections.map(election => (
+                  <option key={election.id} value={election.id}>
+                    {election.title} {election.is_active ? '(Activa)' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <p className="text-gray-500">Resumen en tiempo real de las elecciones</p>
-          {activeElection && (
+          {activeElection && !selectedElectionId && (
             <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
               Elección Activa: {activeElection.title}
             </span>
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          {activeElection && (
+          {activeElection && !selectedElectionId && (
             <>
               <button 
                 onClick={() => {
@@ -178,7 +202,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Ranking de Candidatos</h2>
           
-          {activeElection?.hide_results && activeElection?.status !== 'COMPLETED' ? (
+          {activeElection?.hide_results && activeElection?.status !== 'COMPLETED' && !selectedElectionId ? (
             <div className="absolute inset-0 bg-white/60 backdrop-blur-md z-10 flex flex-col items-center justify-center p-6 text-center">
               <EyeOff className="w-12 h-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-bold text-gray-900 mb-2">Resultados Ocultos</h3>
