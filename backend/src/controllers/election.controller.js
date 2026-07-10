@@ -25,7 +25,7 @@ export const getActiveElection = async (req, res) => {
 
 export const createElection = async (req, res) => {
   try {
-    const { title, start_date, end_date } = req.body;
+    const { title, start_date, end_date, candidateIds } = req.body;
 
     const newElection = await prisma.$transaction(async (tx) => {
       const election = await tx.election.create({
@@ -48,16 +48,11 @@ export const createElection = async (req, res) => {
         }
       });
 
-      // Clonar candidatos activos de la última elección
-      const lastElection = await tx.election.findFirst({
-        where: { id: { not: election.id } },
-        orderBy: { created_at: 'desc' }
-      });
-
-      if (lastElection) {
+      // Clonar candidatos seleccionados
+      if (Array.isArray(candidateIds) && candidateIds.length > 0) {
         const activeCandidates = await tx.candidate.findMany({
           where: { 
-            election_id: lastElection.id, 
+            id: { in: candidateIds.map(Number) }, 
             status: 'ACTIVE', 
             is_blank: false, 
             deleted_at: null 
