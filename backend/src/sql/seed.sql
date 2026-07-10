@@ -13,12 +13,12 @@ RETURNING id;
 -- If the table is fresh, id will be 1.
 
 -- Insert test students
-INSERT INTO students (unique_code, name, grade) VALUES
-('EST001', 'Juan Perez', '11A'),
-('EST002', 'Maria Gomez', '11B'),
-('EST003', 'Carlos Ruiz', '10A'),
-('EST004', 'Ana Torres', '10B'),
-('EST005', 'Luis Mendez', '9A')
+INSERT INTO students (unique_code, name, grade, birth_date) VALUES
+('EST001', 'Juan Perez', '11A', '2005-05-15'),
+('EST002', 'Maria Gomez', '11B', '2006-03-22'),
+('EST003', 'Carlos Ruiz', '10A', '2007-08-10'),
+('EST004', 'Ana Torres', '10B', '2007-11-05'),
+('EST005', 'Luis Mendez', '9A', '2008-01-20')
 ON CONFLICT (unique_code) DO NOTHING;
 
 -- Insert test candidates
