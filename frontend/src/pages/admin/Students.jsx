@@ -8,10 +8,16 @@ export default function Students() {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ unique_code: '', name: '', grade: '' });
+  const [selectedElectionId, setSelectedElectionId] = useState('');
+
+  const { data: elections } = useQuery({
+    queryKey: ['elections'],
+    queryFn: async () => (await api.get('/elections')).data
+  });
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ['students'],
-    queryFn: async () => (await api.get('/students')).data
+    queryKey: ['students', selectedElectionId],
+    queryFn: async () => (await api.get(`/students${selectedElectionId ? `?electionId=${selectedElectionId}` : ''}`)).data
   });
 
   const fileInputRef = useRef(null);
@@ -76,8 +82,24 @@ export default function Students() {
     <div className="p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Estudiantes</h1>
-          <p className="text-gray-500">Gestión del padrón electoral</p>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900">Estudiantes</h1>
+            {elections && elections.length > 0 && (
+              <select 
+                value={selectedElectionId} 
+                onChange={(e) => setSelectedElectionId(e.target.value)}
+                className="bg-white border border-gray-200 text-gray-700 py-1.5 px-3 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">Elección Actual / Última</option>
+                {elections.map(election => (
+                  <option key={election.id} value={election.id}>
+                    {election.title} {election.is_active ? '(Activa)' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          <p className="text-gray-500">Gestión del padrón electoral y estado de votación</p>
         </div>
         <div className="flex gap-3">
           <input 

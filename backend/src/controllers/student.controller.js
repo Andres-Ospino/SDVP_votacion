@@ -1,13 +1,40 @@
 import prisma from '../prisma/client.js';
 
+import pool from '../database/pool.js';
+
 export const getStudents = async (req, res) => {
   try {
-    const students = await prisma.student.findMany({
-      where: { deleted_at: null },
-      orderBy: { name: 'asc' }
-    });
-    res.json(students);
+    let electionId = req.query.electionId ? parseInt(req.query.electionId, 10) : null;
+    
+    if (!electionId) {
+      const activeElectionResult = await pool.query('SELECT id FROM elections WHERE is_active = TRUE LIMIT 1');
+      if (activeElectionResult.rows.length > 0) {
+        electionId = activeElectionResult.rows[0].id;
+      } else {
+        const lastElectionResult = await pool.query('SELECT id FROM elections ORDER BY id DESC LIMIT 1');
+        if (lastElectionResult.rows.length > 0) electionId = lastElectionResult.rows[0].id;
+      }
+    }
+
+    const query = `
+      SELECT 
+        s.id, 
+        s.unique_code, 
+        s.name, 
+        s.grade, 
+        s.birth_date,
+        s.created_at,
+        CASE WHEN v.id IS NOT NULL THEN TRUE ELSE FALSE END as has_voted
+      FROM students s
+      LEFT JOIN votes v ON s.id = v.student_id AND v.election_id = $1
+      WHERE s.deleted_at IS NULL
+      ORDER BY s.name ASC
+    `;
+
+    const result = await pool.query(query, [electionId]);
+    res.json(result.rows);
   } catch (error) {
+    console.error('Error fetching students:', error);
     res.status(500).json({ message: 'Error interno' });
   }
 };

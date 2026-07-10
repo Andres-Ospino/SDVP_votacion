@@ -29,7 +29,7 @@ export const validateStudent = async (req, res) => {
     const electionId = electionResult.rows[0].id;
 
     // Buscar al estudiante
-    const studentQuery = 'SELECT id, name, grade, has_voted FROM students WHERE unique_code = $1 AND deleted_at IS NULL';
+    const studentQuery = 'SELECT id, name, grade FROM students WHERE unique_code = $1 AND deleted_at IS NULL';
     const studentResult = await pool.query(studentQuery, [unique_code]);
 
     if (studentResult.rows.length === 0) {
@@ -38,7 +38,11 @@ export const validateStudent = async (req, res) => {
 
     const student = studentResult.rows[0];
 
-    if (student.has_voted) {
+    // Verificar si ya votó en esta elección
+    const voteCheckQuery = 'SELECT id FROM votes WHERE student_id = $1 AND election_id = $2 LIMIT 1';
+    const voteCheckResult = await pool.query(voteCheckQuery, [student.id, electionId]);
+
+    if (voteCheckResult.rows.length > 0) {
       return res.status(403).json({ message: 'Ya has registrado tu voto en esta elección' });
     }
 
@@ -75,8 +79,8 @@ export const registerVote = async (req, res) => {
     }
     const electionId = electionResult.rows[0].id;
 
-    // 2. Validar estudiante y que no haya votado (Bloquear registro para evitar concurrencia)
-    const studentQuery = 'SELECT id, has_voted FROM students WHERE unique_code = $1 AND deleted_at IS NULL FOR UPDATE';
+    // 2. Validar estudiante (Bloquear registro para evitar concurrencia)
+    const studentQuery = 'SELECT id FROM students WHERE unique_code = $1 AND deleted_at IS NULL FOR UPDATE';
     const studentResult = await client.query(studentQuery, [unique_code]);
 
     if (studentResult.rows.length === 0) {
@@ -85,9 +89,14 @@ export const registerVote = async (req, res) => {
     }
 
     const student = studentResult.rows[0];
-    if (student.has_voted) {
+
+    // Verificar si ya votó en esta elección
+    const voteCheckQuery = 'SELECT id FROM votes WHERE student_id = $1 AND election_id = $2 LIMIT 1';
+    const voteCheckResult = await client.query(voteCheckQuery, [student.id, electionId]);
+
+    if (voteCheckResult.rows.length > 0) {
       await client.query('ROLLBACK');
-      return res.status(403).json({ message: 'El voto ya fue registrado previamente' });
+      return res.status(403).json({ message: 'El voto ya fue registrado previamente en esta elección' });
     }
 
     // 3. Validar que el candidato exista y esté activo en esta elección
@@ -103,10 +112,6 @@ export const registerVote = async (req, res) => {
     const receipt_id = crypto.randomUUID();
     const insertVoteQuery = 'INSERT INTO votes (election_id, student_id, candidate_id, receipt_id) VALUES ($1, $2, $3, $4)';
     await client.query(insertVoteQuery, [electionId, student.id, candidate_id, receipt_id]);
-
-    // 5. Marcar al estudiante como que ya votó
-    const updateStudentQuery = 'UPDATE students SET has_voted = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = $1';
-    await client.query(updateStudentQuery, [student.id]);
 
     await client.query('COMMIT'); // Confirmar transacción
     res.json({ message: 'Voto registrado exitosamente', receipt_id });
